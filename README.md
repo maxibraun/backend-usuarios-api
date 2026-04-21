@@ -22,6 +22,16 @@ API REST desarrollada en Flask para gestión de usuarios, conectada a PostgreSQL
 
 ---
 
+## ✨ Características destacadas
+
+- API REST estructurada con Flask
+- Arquitectura modular (routes, models, database)
+- Conexión a PostgreSQL mediante SQLAlchemy
+- Uso de variables de entorno para configuración segura
+- Implementación de CRUD (Create, Read, Delete)
+
+---
+
 ## ⚙️ Configuración
 
 Definir la variable de entorno `DATABASE_URL`
@@ -77,6 +87,66 @@ GET /usuarios/1
 GET /usuarios?nombre=Maxi
 
 ---
+
+### Crear usuario
+
+POST /usuarios
+
+Body:
+{
+  "nombre": "Maxi",
+  "idpersona": 123
+}
+
+---
+
+### Eliminar usuario
+
+DELETE /usuarios/<id>
+
+Respuesta:
+{
+  "mensaje": "Usuario eliminado correctamente"
+}
+
+---
+
+### Actualizar usuario
+
+PUT /usuarios/<id>
+
+Body:
+{
+  "nombre": "Nuevo Nombre",
+  "idpersona": 123
+}
+
+---
+
+## 🏗️ Estructura del proyecto
+
+backend-usuarios-api/
+│
+├── app.py
+├── database.py
+├── models.py
+├── requirements.txt
+├── README.md
+│
+└── routes/
+    └── usuarios.py
+
+## ❗ Manejo de errores
+
+## ❗ Manejo de errores
+
+La API devuelve códigos HTTP apropiados:
+
+- 200 OK → solicitud exitosa  
+- 201 Created → recurso creado  
+- 400 Bad Request → datos inválidos  
+- 404 Not Found → recurso no encontrado  
+- 500 Internal Server Error → error del servidor  
 
 ## 📷 Ejemplo de respuesta
 
