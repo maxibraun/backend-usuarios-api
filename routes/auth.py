@@ -1,25 +1,59 @@
 from flask import Blueprint, request, jsonify
 from database import SessionLocal
 from models.usuario import Usuario
+from flask_jwt_extended import create_access_token
 import bcrypt
 
 auth_bp = Blueprint("auth", __name__)
 
+# 🔐 LOGIN REAL
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    session = SessionLocal()
 
-    username = data.get("username")
-    password = data.get("password")
+    try:
+        data = request.get_json()
 
-    if username != "admin" or password != "1234":
-        return {"error": "Credenciales inválidas"}, 401
+        if not data:
+            return {"error": "Body vacío"}, 400
 
-    access_token = create_access_token(identity=username)
+        nombre = data.get("nombre")
+        password = data.get("password")
 
-    return {"access_token": access_token}, 200
+        if not nombre or not password:
+            return {"error": "nombre y password son obligatorios"}, 400
+
+        # 🔍 Buscar usuario en BD
+        usuario = session.query(Usuario).filter_by(nombre=nombre).first()
+
+        if not usuario:
+            return {"error": "Credenciales inválidas"}, 401
+
+        # 🔐 Validar password con bcrypt
+        if not bcrypt.checkpw(
+            password.encode('utf-8'),
+            usuario.password.encode('utf-8')
+        ):
+            return {"error": "Credenciales inválidas"}, 401
+
+        # 🎟️ Generar token
+        access_token = create_access_token(identity=usuario.nombre)
+
+        return jsonify({
+            "access_token": access_token
+        }), 200
+
+    except Exception as e:
+        session.rollback()
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e)}, 500
+
+    finally:
+        session.close()
 
 
+# 🧱 REGISTER
 @auth_bp.route("/register", methods=["POST"])
 def register():
     session = SessionLocal()
@@ -34,7 +68,6 @@ def register():
         password = data.get("password")
         idpersona = data.get("idpersona")
 
-        # 🔴 Validaciones
         if not nombre:
             return {"error": "nombre es obligatorio"}, 400
 
@@ -52,7 +85,6 @@ def register():
             bcrypt.gensalt()
         ).decode('utf-8')
 
-        # 🧱 Crear usuario
         nuevo_usuario = Usuario(
             nombre=nombre,
             idpersona=idpersona,
