@@ -5,8 +5,15 @@ from flasgger import Swagger
 from database import engine, Base
 from models.usuario import Usuario
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:4200"]
+    }
+})
 
 jwt = JWTManager(app)
 
