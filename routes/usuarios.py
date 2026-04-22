@@ -1,12 +1,37 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from sqlalchemy import func
 from database import SessionLocal
-from models import Usuario
+from models.usuario import Usuario
+import bcrypt
 
 usuarios_bp = Blueprint("usuarios", __name__)
 
-@usuarios_bp.route("/usuarios")
+@usuarios_bp.route("/usuarios", methods=["GET"])
 def get_usuarios():
+    """
+    Obtener lista de usuarios
+    ---
+    parameters:
+      - name: nombre
+        in: query
+        type: string
+        required: false
+        description: Filtrar por nombre
+    responses:
+      200:
+        description: Lista de usuarios
+        schema:
+          type: array
+          items:
+            properties:
+              id:
+                type: integer
+              nombre:
+                type: string
+              idpersona:
+                type: integer
+    """
     session = SessionLocal()
     
     try:
@@ -56,7 +81,27 @@ def get_usuario(id):
         session.close()
 
 @usuarios_bp.route("/usuarios", methods=["POST"])
+#@jwt_required()
 def crear_usuario():
+    """
+    Crear un nuevo usuario
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          properties:
+            nombre:
+              type: string
+            idpersona:
+              type: integer
+            password:
+              type: string
+    responses:
+      201:
+        description: Usuario creado
+    """
     session = SessionLocal()
     
     try:
@@ -68,6 +113,7 @@ def crear_usuario():
 
         nombre = data.get("nombre")
         idpersona = data.get("idpersona")
+        password = data.get("password")
 
         if not nombre:
             return jsonify({"error": "El campo 'nombre' es obligatorio"}), 400
@@ -78,10 +124,24 @@ def crear_usuario():
         if idpersona is not None and not isinstance(idpersona, int):
             return jsonify({"error": "'idpersona' debe ser número"}), 400
 
+        # 🔐 VALIDAR PASSWORD
+        if not password:
+            return jsonify({"error": "El campo 'password' es obligatorio"}), 400
+
+        if not isinstance(password, str):
+            return jsonify({"error": "'password' debe ser texto"}), 400
+
+        # 🔐 HASH PASSWORD
+        hashed_password = bcrypt.hashpw(
+            password.encode('utf-8'),
+            bcrypt.gensalt()
+        ).decode('utf-8')
+        
         # 🧱 Crear objeto
         nuevo_usuario = Usuario(
             nombre=nombre,
-            idpersona=idpersona
+            idpersona=idpersona,
+            password=hashed_password
         )
 
         session.add(nuevo_usuario)
@@ -102,6 +162,7 @@ def crear_usuario():
         session.close()
         
 @usuarios_bp.route("/usuarios/<int:id>", methods=["DELETE"])
+@jwt_required()
 def eliminar_usuario(id):
     session = SessionLocal()
     
@@ -125,6 +186,7 @@ def eliminar_usuario(id):
         session.close()
         
 @usuarios_bp.route("/usuarios/<int:id>", methods=["PUT"])
+@jwt_required()
 def actualizar_usuario(id):
     session = SessionLocal()
     
