@@ -1,6 +1,6 @@
 # 🚀 Backend Usuarios API
 
-API REST desarrollada en Flask para gestión de usuarios, conectada a PostgreSQL usando SQLAlchemy.
+API REST desarrollada en Flask para gestión de usuarios, con autenticación JWT y base de datos PostgreSQL usando SQLAlchemy.
 
 ---
 
@@ -8,153 +8,170 @@ API REST desarrollada en Flask para gestión de usuarios, conectada a PostgreSQL
 
 - Python
 - Flask
-- PostgreSQL
 - SQLAlchemy
+- PostgreSQL
+- JWT (flask-jwt-extended)
+- bcrypt
+- Swagger (Flasgger)
 
 ---
 
 ## 📌 Funcionalidades
 
-- Obtener lista de usuarios
-- Obtener usuario por ID
-- Filtrar usuarios por nombre
-- Manejo de errores
+- Registro de usuarios (`/register`)
+- Login con JWT (`/login`)
+- CRUD de usuarios protegido
+- Hash seguro de contraseñas (bcrypt)
+- Validaciones básicas
+- Documentación interactiva (Swagger)
 
 ---
 
-## ✨ Características destacadas
+## 🔐 Autenticación
 
-- API REST estructurada con Flask
-- Arquitectura modular (routes, models, database)
-- Conexión a PostgreSQL mediante SQLAlchemy
-- Uso de variables de entorno para configuración segura
-- Implementación de CRUD (Create, Read, Delete)
+La API utiliza JWT (JSON Web Tokens).
+
+### Flujo:
+
+1. Registrar usuario  
+2. Login → obtener token  
+3. Usar token en endpoints protegidos  
+
+Header requerido:
+
+Authorization: Bearer TU_TOKEN
 
 ---
 
 ## ⚙️ Configuración
 
-Definir la variable de entorno `DATABASE_URL`
+Definir variables de entorno:
 
-Ejemplo:
-
-postgresql+psycopg2://usuario:password@localhost:5432/tu_db
+DATABASE_URL=postgresql+psycopg2://usuario:password@host:5432/db  
+JWT_SECRET_KEY=super-secret-key
 
 ---
 
 ## ▶️ Cómo ejecutar el proyecto
 
-1. Clonar el repositorio:
-
-git clone https://github.com/maxibraun/backend-usuarios-api.git
-
-2. Entrar a la carpeta:
-
-cd backend-usuarios-api
-
-3. Instalar dependencias:
-
-pip install -r requirements.txt
-
-4. Configurar variable de entorno:
-
-En Windows (PowerShell):
-
-$env:DATABASE_URL="postgresql+psycopg2://usuario:password@localhost:5432/tu_db"
-
-5. Ejecutar la aplicación:
-
-python app.py
+git clone https://github.com/maxibraun/backend-usuarios-api.git  
+cd backend-usuarios-api  
+pip install -r requirements.txt  
+python app.py  
 
 ---
 
 ## 🔗 Endpoints
 
-### Obtener todos los usuarios
+### 🔓 Registro de usuario
+
+POST /register
+
+Body:
+
+{
+  "nombre": "maxi",
+  "password": "1234",
+  "idpersona": 123
+}
+
+---
+
+### 🔓 Login
+
+POST /login
+
+Body:
+
+{
+  "nombre": "maxi",
+  "password": "1234"
+}
+
+Respuesta:
+
+{
+  "access_token": "..."
+}
+
+---
+
+### 🔒 Obtener usuarios
 
 GET /usuarios
 
 ---
 
-### Obtener usuario por ID
+### 🔒 Obtener usuario por ID
 
-GET /usuarios/1
+GET /usuarios/<id>
 
 ---
 
-### Filtrar usuarios por nombre
+### 🔒 Filtrar usuarios
 
 GET /usuarios?nombre=Maxi
 
 ---
 
-### Crear usuario
-
-POST /usuarios
-
-Body:
-{
-  "nombre": "Maxi",
-  "idpersona": 123
-}
-
----
-
-### Eliminar usuario
-
-DELETE /usuarios/<id>
-
-Respuesta:
-{
-  "mensaje": "Usuario eliminado correctamente"
-}
-
----
-
-### Actualizar usuario
+### 🔒 Actualizar usuario
 
 PUT /usuarios/<id>
 
-Body:
-{
-  "nombre": "Nuevo Nombre",
-  "idpersona": 123
-}
+---
+
+### 🔒 Eliminar usuario
+
+DELETE /usuarios/<id>
+
+---
+
+## 📄 Swagger
+
+http://127.0.0.1:5000/apidocs
 
 ---
 
 ## 🏗️ Estructura del proyecto
 
 backend-usuarios-api/
-│
-├── app.py
-├── database.py
-├── models.py
-├── requirements.txt
-├── README.md
-│
-└── routes/
-    └── usuarios.py
+
+├── app.py  
+├── database.py  
+├── models/  
+│   └── usuario.py  
+├── routes/  
+│   ├── usuarios.py  
+│   └── auth.py  
+├── requirements.txt  
+└── README.md  
+
+---
 
 ## ❗ Manejo de errores
 
-## ❗ Manejo de errores
+- Validación de datos de entrada  
+- Manejo de excepciones con rollback de sesión  
+- Respuestas JSON con mensajes de error claros  
 
-La API devuelve códigos HTTP apropiados:
+---
 
-- 200 OK → solicitud exitosa  
-- 201 Created → recurso creado  
-- 400 Bad Request → datos inválidos  
-- 404 Not Found → recurso no encontrado  
-- 500 Internal Server Error → error del servidor  
+## 🚀 Deploy
+
+La API puede ser desplegada en Render utilizando:
+
+- Web Service (Flask + Gunicorn)  
+- PostgreSQL gestionado en Render  
+- Variables de entorno configuradas en el dashboard  
+
+---
 
 ## 📷 Ejemplo de respuesta
 
-```json
 [
   {
     "id": 1,
-    "nombre": "Maxi",
-    "idpersona": 10
+    "nombre": "maxi",
+    "idpersona": 16
   }
 ]
