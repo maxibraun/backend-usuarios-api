@@ -6,8 +6,12 @@ from database import engine, Base
 from models.usuario import Usuario
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
+
+# 🔐 CLAVE JWT 
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY") or "dev-secret"
 
 CORS(app, resources={
     r"/*": {
